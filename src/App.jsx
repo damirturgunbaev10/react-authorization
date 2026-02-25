@@ -1,81 +1,139 @@
 import React, { useState, useEffect } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 
 const LoginForm = ({ onLogin }) => {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("123");
+  const [username, setUsername] = useState("mor_2314");
+  const [password, setPassword] = useState("83r5^_");
 
   return (
     <div className="glass-card">
       <h2>Вход</h2>
-      <form onSubmit={(e) => { e.preventDefault(); onLogin(username, password); }}>
-        <input 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)} 
-          placeholder="Логин" 
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onLogin(username, password);
+        }}
+      >
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Логин"
         />
-        <input 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="Пароль" 
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Пароль"
         />
-        <button type="submit">Продолжить</button>
+        <button type="submit">Войти</button>
       </form>
     </div>
   );
 };
 
-const Dashboard = ({ onLogout }) => {
+const Dashboard = ({ user, onLogout }) => {
   return (
-    <div className="glass-card" style={{ width: "400px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <h3 style={{ margin: 0 }}>Панель управления</h3>
-        <button className="secondary" onClick={onLogout}>Выйти</button>
+    <div className="glass-card" style={{ width: "450px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <h3>Панель управления</h3>
+        <button className="secondary" onClick={onLogout}>
+          Выйти
+        </button>
       </div>
-      <div style={{ textAlign: "left", background: "rgba(255,255,255,0.2)", padding: "20px", borderRadius: "20px" }}>
-        <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>Статус: Авторизован</p>
-        <h1 style={{ margin: "5px 0", fontSize: "24px" }}>С возвращением!</h1>
+
+      <div
+        style={{
+          marginTop: "20px",
+          textAlign: "left",
+          background: "rgba(255,255,255,0.2)",
+          padding: "20px",
+          borderRadius: "20px",
+        }}
+      >
+        <p>
+          <strong>Username:</strong> {user.username}
+        </p>
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
+        <p>
+          <strong>Имя:</strong> {user.name.firstname} {user.name.lastname}
+        </p>
+        <p>
+          <strong>Город:</strong> {user.address.city}
+        </p>
       </div>
-      <input placeholder="Быстрый поиск..." style={{ marginTop: "20px" }} />
     </div>
   );
 };
 
 export default function App() {
   const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
-    if (savedToken) setToken(savedToken);
+    const savedUser = localStorage.getItem("user");
+
+    if (savedToken && savedUser) {
+      setToken(savedToken);
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
-  const handleLogin = (u, p) => {
-    if (u === "admin" && p === "123") {
-      const fakeToken = "auth_success_token";
-      localStorage.setItem("token", fakeToken);
-      setToken(fakeToken);
+  const handleLogin = async (username, password) => {
+    try {
+      const loginRes = await fetch("https://fakestoreapi.com/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!loginRes.ok) {
+        throw new Error("Ошибка авторизации");
+      }
+
+      const loginData = await loginRes.json();
+
+      const usersRes = await fetch("https://fakestoreapi.com/users");
+      const users = await usersRes.json();
+
+      const foundUser = users.find((u) => u.username === username);
+
+      if (!foundUser) {
+        throw new Error("Пользователь не найден");
+      }
+
+      localStorage.setItem("token", loginData.token);
+      localStorage.setItem("user", JSON.stringify(foundUser));
+
+      setToken(loginData.token);
+      setUser(foundUser);
+
       toast.success("Успешный вход!");
-    } else {
-      toast.error("Неверные данные");
+    } catch (error) {
+      toast.error("Неверные данные или ошибка сервера");
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
+    setUser(null);
     toast.info("Вы вышли");
   };
 
   return (
     <div className="container">
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
+
       {!token ? (
         <LoginForm onLogin={handleLogin} />
       ) : (
-        <Dashboard onLogout={handleLogout} />
+        <Dashboard user={user} onLogout={handleLogout} />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 :root {
-  --ios-blue: #007AFF;
+  --ios-blue: #007aff;
   --glass-bg: rgba(255, 255, 255, 0.4);
   --glass-border: rgba(255, 255, 255, 0.2);
 }
@@ -26,7 +26,11 @@ body {
   text-align: center;
 }
 
-h2 { font-weight: 600; margin-bottom: 25px; color: #1d1d1f; }
+h2 {
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #1d1d1f;
+}
 
 input {
   width: 100%;
@@ -40,7 +44,10 @@ input {
   outline: none;
 }
 
-input:focus { background: white; border-color: var(--ios-blue); }
+input:focus {
+  background: white;
+  border-color: var(--ios-blue);
+}
 
 button {
   width: 100%;
@@ -57,10 +64,12 @@ button {
 
 button.secondary {
   background: rgba(255, 59, 48, 0.1);
-  color: #FF3B30;
+  color: #ff3b30;
   width: auto;
   padding: 8px 15px;
   font-size: 14px;
 }
 
-.Toastify__toast { border-radius: 16px !important; }
+.Toastify__toast {
+  border-radius: 16px !important;
+}
